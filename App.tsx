@@ -16,13 +16,11 @@ import {
   View,
 } from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import {useState, useEffect} from 'react';
+
+import {Colors, Header} from 'react-native/Libraries/NewAppScreen';
+
+import {NativeEventEmitter, NativeModules} from 'react-native';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -55,6 +53,20 @@ function Section({children, title}: SectionProps): React.JSX.Element {
 }
 
 function App(): React.JSX.Element {
+  const [sharedText, setSharedText] = useState<string | null>('null');
+
+  useEffect(() => {
+    const eventEmitter = new NativeEventEmitter(
+      NativeModules.DeviceEventManagerModule,
+    );
+    const subscription = eventEmitter.addListener('onSharedText', text => {
+      console.log('공유 받은 텍스트:', text);
+      setSharedText(text);
+    });
+
+    return () => subscription.remove();
+  }, [sharedText]);
+
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
@@ -78,10 +90,9 @@ function App(): React.JSX.Element {
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={backgroundStyle.backgroundColor}
       />
-      <ScrollView
-        style={backgroundStyle}>
+      <ScrollView style={backgroundStyle}>
         <View style={{paddingRight: safePadding}}>
-          <Header/>
+          <Header />
         </View>
         <View
           style={{
@@ -90,19 +101,8 @@ function App(): React.JSX.Element {
             paddingBottom: safePadding,
           }}>
           <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
+            <Text style={styles.highlight}>sharedText : {sharedText}</Text>
           </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
         </View>
       </ScrollView>
     </View>
