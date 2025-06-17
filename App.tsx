@@ -1,12 +1,4 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
 import React from 'react';
-import type {PropsWithChildren} from 'react';
 import {
   ScrollView,
   StatusBar,
@@ -15,57 +7,25 @@ import {
   useColorScheme,
   View,
 } from 'react-native';
-
 import {useState, useEffect} from 'react';
-
 import {Colors, Header} from 'react-native/Libraries/NewAppScreen';
-
-import {NativeEventEmitter, NativeModules} from 'react-native';
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+import {
+  NativeEventEmitter,
+  NativeModules,
+  DeviceEventEmitter,
+} from 'react-native';
 
 function App(): React.JSX.Element {
   const [sharedText, setSharedText] = useState<string | null>('null');
 
   useEffect(() => {
-    const eventEmitter = new NativeEventEmitter(
-      NativeModules.DeviceEventManagerModule,
-    );
-    const subscription = eventEmitter.addListener('onSharedText', text => {
-      console.log('공유 받은 텍스트:', text);
-      setSharedText(text);
+    console.log('👂 이벤트 리스너 설정 시도 중');
+    const sub = DeviceEventEmitter.addListener('onSharedText', text => {
+      console.log('📥 JS에서 이벤트 받음:', text);
     });
 
-    return () => subscription.remove();
-  }, [sharedText]);
+    return () => sub.remove();
+  }, []);
 
   const isDarkMode = useColorScheme() === 'dark';
 
@@ -90,19 +50,11 @@ function App(): React.JSX.Element {
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={backgroundStyle.backgroundColor}
       />
+
       <ScrollView style={backgroundStyle}>
         <View style={{paddingRight: safePadding}}>
           <Header />
-        </View>
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-            paddingHorizontal: safePadding,
-            paddingBottom: safePadding,
-          }}>
-          <Section title="Step One">
-            <Text style={styles.highlight}>sharedText : {sharedText}</Text>
-          </Section>
+          <Text style={styles.sectionContainer}>sharedText:{sharedText}</Text>
         </View>
       </ScrollView>
     </View>
@@ -113,18 +65,8 @@ const styles = StyleSheet.create({
   sectionContainer: {
     marginTop: 32,
     paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
+    color: 'white',
+    fontSize: 32,
   },
 });
 
